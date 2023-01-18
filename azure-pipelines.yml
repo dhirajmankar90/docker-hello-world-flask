@@ -4,8 +4,6 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
-variables:
-  imageName : 'image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
 
 stages:
 - stage: "BuildStage"
@@ -20,7 +18,7 @@ stages:
         azureContainerRegistry: '{"loginServer":"acrdhiraj.azurecr.io", "id" : "/subscriptions/7fcfbbab-6c02-4dc7-99d4-0ad01473636c/resourceGroups/DevOps-group/providers/Microsoft.ContainerRegistry/registries/acrdhiraj"}'
         action: 'Build an image'
         dockerFile: '**/Dockerfile'
-        imageName: '${imageName}'
+        imageName: 'image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
     - task: Docker@0
       displayName: 'Push an image'
       inputs:
@@ -28,18 +26,18 @@ stages:
         azureSubscription: 'Azure Connection To DevOps'
         azureContainerRegistry: '{"loginServer":"acrdhiraj.azurecr.io", "id" : "/subscriptions/7fcfbbab-6c02-4dc7-99d4-0ad01473636c/resourceGroups/DevOps-group/providers/Microsoft.ContainerRegistry/registries/acrdhiraj"}'
         action: 'Push an image'
-        imageName: '${imageName}'
+        imageName: 'image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
     - task: AzureWebAppContainer@1
       displayName: "Deploy to Dev"
       inputs:
         azureSubscription: 'Azure Connection To DevOps'
         appName: 'azureapp-dev'
-        containers: 'acrdhiraj.azurecr.io/${imageName}'
+        containers: 'acrdhiraj.azurecr.io/image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
       condition: eq(variables['Build.SourceBranchName'], 'dev')
     - task: AzureWebAppContainer@1
       displayName: "Deploy to QA"
       inputs:
         azureSubscription: 'Azure Connection To DevOps'
         appName: 'azuredjapp-qa'
-        containers: 'acrdhiraj.azurecr.io/${imageName}'
+        containers: 'acrdhiraj.azurecr.io/image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
       condition: eq(variables['Build.SourceBranchName'], 'main')
