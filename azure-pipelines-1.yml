@@ -1,0 +1,42 @@
+trigger:
+- main
+- dev
+
+pool:
+  vmImage: ubuntu-latest
+variables:
+  imageName : 'image-$(Build.Repository.Name):$(Build.SourceBranchName)-$(Build.BuildId)'
+
+stages:
+- stage: "BuildStage"
+  jobs:
+  - job:
+    steps:
+    - task: Docker@0
+      displayName: 'Build an image'
+      inputs:
+        azureSubscription: 'Azure-Portal Access'
+        azureContainerRegistry: '{"loginServer":"acrdhiraj.azurecr.io", "id" : "/subscriptions/7fcfbbab-6c02-4dc7-99d4-0ad01473636c/resourceGroups/DevOps-SG/providers/Microsoft.ContainerRegistry/registries/acrdhiraj"}'
+        dockerFile: Dockerfile
+        imageName: ${imageName}
+    - task: Docker@0
+      displayName: 'Push an image'
+      inputs:
+        azureSubscription: 'Azure-Portal Access'
+        azureContainerRegistry: '{"loginServer":"acrdhiraj.azurecr.io", "id" : "/subscriptions/7fcfbbab-6c02-4dc7-99d4-0ad01473636c/resourceGroups/DevOps-group/providers/Microsoft.ContainerRegistry/registries/acrdhiraj"}'
+        action: 'Push an image'
+        imageName: ${imageName}
+    - task: AzureWebAppContainer@1
+      displayName: "Deploy to Dev"
+      inputs:
+        azureSubscription: 'Azure-Portal Access'
+        appName: 'azureapp-dev'
+        containers: 'acrdhiraj.azurecr.io/${imageName}'
+      condition: eq(variables['Build.SourceBranchName'], 'dev')
+    - task: AzureWebAppContainer@1
+      displayName: "Deploy to QA"
+      inputs:
+        azureSubscription: 'Azure-Portal Access'
+        appName: 'azuredjapp-qa'
+        containers: 'acrdhiraj.azurecr.io/${imageName}'
+      condition: eq(variables['Build.SourceBranchName'], 'main')
