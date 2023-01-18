@@ -19,7 +19,7 @@ stages:
         azureSubscription: 'Azure Connection To DevOps'
         azureContainerRegistry: '{"loginServer":"acrdhiraj.azurecr.io", "id" : "/subscriptions/7fcfbbab-6c02-4dc7-99d4-0ad01473636c/resourceGroups/DevOps-group/providers/Microsoft.ContainerRegistry/registries/acrdhiraj"}'
         action: 'Build an image'
-        dockerFile: 'Dockerfile'
+        dockerFile: '**/Dockerfile'
         imageName: '${imageName}'
     - task: Docker@0
       displayName: 'Push an image'
